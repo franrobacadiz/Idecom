@@ -39,7 +39,7 @@ class _OnlineStatusWidgetState extends State<OnlineStatusWidget> {
   double? get height => bind.isIncomingOnly() ? null : em * 3;
 
   void onUsePublicServerGuide() {
-    const url = "https://rustdesk.com/pricing";
+    const url = "https://rustdesk.com/pricing.html";
     canLaunchUrlString(url).then((can) {
       if (can) {
         launchUrlString(url);
@@ -200,21 +200,18 @@ class _ConnectionPageState extends State<ConnectionPage>
   final _idController = IDTextEditingController();
 
   final RxBool _idInputFocused = false.obs;
-  final FocusNode _idFocusNode = FocusNode();
-  final TextEditingController _idEditingController = TextEditingController();
 
   bool isWindowMinimized = false;
+  List<Peer> peers = [];
 
-  final AllPeersLoader _allPeersLoader = AllPeersLoader();
-
+  bool isPeersLoading = false;
+  bool isPeersLoaded = false;
   // https://github.com/flutter/flutter/issues/157244
   Iterable<Peer> _autocompleteOpts = [];
 
   @override
   void initState() {
     super.initState();
-    _allPeersLoader.init(setState);
-    _idFocusNode.addListener(onFocusChanged);
     if (_idController.text.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         final lastRemoteId = await bind.mainGetLastRemoteId();
@@ -225,7 +222,6 @@ class _ConnectionPageState extends State<ConnectionPage>
         }
       });
     }
-    Get.put<TextEditingController>(_idEditingController);
     Get.put<IDTextEditingController>(_idController);
     windowManager.addListener(this);
   }
@@ -234,10 +230,6 @@ class _ConnectionPageState extends State<ConnectionPage>
   void dispose() {
     _idController.dispose();
     windowManager.removeListener(this);
-    _allPeersLoader.clear();
-    _idFocusNode.removeListener(onFocusChanged);
-    _idFocusNode.dispose();
-    _idEditingController.dispose();
     if (Get.isRegistered<IDTextEditingController>()) {
       Get.delete<IDTextEditingController>();
     }
@@ -281,7 +273,7 @@ class _ConnectionPageState extends State<ConnectionPage>
     bind.mainOnMainWindowClose();
   }
 
-  @override
+   @override
 Widget build(BuildContext context) {
   final isOutgoingOnly = bind.isOutgoingOnly();
   
