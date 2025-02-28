@@ -54,7 +54,7 @@ fn make_tray() -> hbb_common::ResultType<()> {
         .context("Failed to open icon")?;
 
     let mut event_loop = EventLoopBuilder::new().build();
-    
+   
     let tooltip = |count: usize| {
         if count == 0 {
             format!(
@@ -141,22 +141,6 @@ fn make_tray() -> hbb_common::ResultType<()> {
 
                 let rl = CFRunLoopGetMain();
                 CFRunLoopWakeUp(rl);
-            }
-        }
-
-        if let Ok(event) = menu_channel.try_recv() {
-            if event.id == quit_i.id() {
-                /* failed in windows, seems no permission to check system process
-                if !crate::check_process("--server", false) {
-                    *control_flow = ControlFlow::Exit;
-                    return;
-                }
-                */
-                if !crate::platform::uninstall_service(false, false) {
-                    *control_flow = ControlFlow::Exit;
-                }
-            } else if event.id == open_i.id() {
-                open_func();
             }
         }
 
@@ -252,3 +236,4 @@ fn load_icon_from_asset() -> Option<image::DynamicImage> {
     }
     None
 }
+
