@@ -300,25 +300,5 @@ Widget build(BuildContext context) {
     ],
   );
 }
-
-
-  /// Callback for the connect button.
-  /// Connects to the selected peer.
-  void onConnect({bool isFileTransfer = false}) {
-    var id = _idController.id;
-    connect(context, id, isFileTransfer: isFileTransfer);
-  }
-
-  Future<void> _fetchPeers() async {
-    setState(() {
-      isPeersLoading = true;
-    });
-    await Future.delayed(Duration(milliseconds: 100));
-    peers = await getAllPeers();
-    setState(() {
-      isPeersLoading = false;
-      isPeersLoaded = true;
-    });
-  }
 }
 
