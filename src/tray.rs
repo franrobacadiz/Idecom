@@ -54,11 +54,7 @@ fn make_tray() -> hbb_common::ResultType<()> {
         .context("Failed to open icon")?;
 
     let mut event_loop = EventLoopBuilder::new().build();
-
-    let tray_menu = Menu::new();
-    let quit_i = MenuItem::new(translate("Exit".to_owned()), true, None);
-    let open_i = MenuItem::new(translate("Open".to_owned()), true, None);
-    tray_menu.append_items(&[&open_i, &quit_i]).ok();
+    
     let tooltip = |count: usize| {
         if count == 0 {
             format!(
@@ -126,7 +122,6 @@ fn make_tray() -> hbb_common::ResultType<()> {
             // We create the icon once the event loop is actually running
             // to prevent issues like https://github.com/tauri-apps/tray-icon/issues/90
             let tray = TrayIconBuilder::new()
-                .with_menu(Box::new(tray_menu.clone()))
                 .with_tooltip(tooltip(0))
                 .with_icon(icon.clone())
                 .with_icon_as_template(true) // mac only
