@@ -18,29 +18,14 @@ class DesktopTabPage extends StatefulWidget {
   @override
   State<DesktopTabPage> createState() => _DesktopTabPageState();
 
-  // Método estático que debe llamarse usando DesktopTabPage.onAddSetting()
-  static void onAddSetting({SettingsTabKey initialPage = SettingsTabKey.general}) {
-    try {
-      DesktopTabController tabController = Get.find<DesktopTabController>();
-      tabController.add(TabInfo(
-        key: kTabLabelSettingPage,
-        label: kTabLabelSettingPage,
-        selectedIcon: Icons.build_sharp,
-        unselectedIcon: Icons.build_outlined,
-        page: DesktopSettingPage(
-          key: const ValueKey(kTabLabelSettingPage),
-          initialTabkey: initialPage,
-        ),
-      ));
-    } catch (e) {
-      debugPrintStack(label: '$e');
-    }
+  // Modificamos este método para pedir la contraseña antes de ejecutar la acción
+  static void onAddSetting(
+      {SettingsTabKey initialPage = SettingsTabKey.general}) {
+    _showPasswordDialog(initialPage: initialPage);
   }
-}
 
-class _DesktopTabPageState extends State<DesktopTabPage> {
-  // Función para solicitar la contraseña antes de ejecutar onAddSetting
-  void promptForPassword({SettingsTabKey initialPage = SettingsTabKey.general}) {
+  // Este es el nuevo método para mostrar el cuadro de contraseña
+  static void _showPasswordDialog({SettingsTabKey initialPage = SettingsTabKey.general}) {
     TextEditingController passwordController = TextEditingController();
 
     Get.dialog(
@@ -58,9 +43,10 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
           ),
           TextButton(
             onPressed: () {
+              // Verificamos si la contraseña es correcta
               if (passwordController.text == "tu_contraseña") { // Cambia esto por tu contraseña real
                 Get.back(); // Cierra el diálogo
-                DesktopTabPage.onAddSetting(initialPage: initialPage); // Llama a la función estática correctamente
+                _executeAddSetting(initialPage); // Llama a la función estática con la contraseña correcta
               } else {
                 Get.snackbar("Error", "Contraseña incorrecta",
                     backgroundColor: Colors.red, colorText: Colors.white);
@@ -73,19 +59,25 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Configuración")),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () => promptForPassword(),
-          child: Text("Abrir configuración"),
-        ),
-      ),
-    );
+  // Esta función es la que se ejecutará si la contraseña es correcta
+  static void _executeAddSetting(SettingsTabKey initialPage) {
+    try {
+      DesktopTabController tabController = Get.find<DesktopTabController>();
+      tabController.add(TabInfo(
+          key: kTabLabelSettingPage,
+          label: kTabLabelSettingPage,
+          selectedIcon: Icons.build_sharp,
+          unselectedIcon: Icons.build_outlined,
+          page: DesktopSettingPage(
+            key: const ValueKey(kTabLabelSettingPage),
+            initialTabkey: initialPage,
+          )));
+    } catch (e) {
+      debugPrintStack(label: '$e');
+    }
   }
 }
+
 class _DesktopTabPageState extends State<DesktopTabPage> {
   final tabController = DesktopTabController(tabType: DesktopTabType.main);
 
