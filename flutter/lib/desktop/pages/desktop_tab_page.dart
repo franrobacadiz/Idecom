@@ -44,7 +44,7 @@ class DesktopTabPage extends StatefulWidget {
           TextButton(
             onPressed: () {
               // Verificamos si la contraseña es correcta
-              if (passwordController.text == "tu_contraseña") { // Cambia esto por tu contraseña real
+              if (passwordController.text == "@Idecominf1#") { // Cambia esto por tu contraseña real
                 Get.back(); // Cierra el diálogo
                 _executeAddSetting(initialPage); // Llama a la función estática con la contraseña correcta
               } else {
