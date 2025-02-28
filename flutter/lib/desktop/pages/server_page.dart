@@ -353,7 +353,7 @@ Widget buildConnectionCard(Client client) {
       key: ValueKey(client.id),
       children: [
         _CmHeader(client: client),
-        client.type_() != ClientType.remote || client.disconnected
+        client.type_() == ClientType.file || client.type_() == ClientType.portForward || client.disconnected
             ? Offstage()
             : _PrivilegeBoard(client: client),
         Expanded(
@@ -526,7 +526,8 @@ class _CmHeaderState extends State<_CmHeader>
           Offstage(
             offstage: !client.authorized ||
                 (client.type_() != ClientType.remote &&
-                    client.type_() != ClientType.file),
+                    client.type_() != ClientType.file &&
+                      client.type_() != ClientType.camera),
             child: IconButton(
               onPressed: () => checkClickTime(client.id, () {
                 if (client.type_() == ClientType.file) {
@@ -627,7 +628,22 @@ class _PrivilegeBoardState extends State<_PrivilegeBoard> {
               padding: EdgeInsets.symmetric(horizontal: spacing),
               mainAxisSpacing: spacing,
               crossAxisSpacing: spacing,
-              children: [
+              children: client.type_() == ClientType.camera
+                ? [
+                    buildPermissionIcon(
+                      client.recording,
+                      Icons.videocam_rounded,
+                      (enabled) {
+                        bind.cmSwitchPermission(
+                            connId: client.id, name: "recording", enabled: enabled);
+                        setState(() {
+                          client.recording = enabled;
+                        });
+                      },
+                      translate('Enable recording session'),
+                    ),
+                  ] 
+                : [
                 buildPermissionIcon(
                   client.keyboard,
                   Icons.keyboard,

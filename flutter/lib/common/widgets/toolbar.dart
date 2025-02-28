@@ -91,6 +91,15 @@ List<TTextMenu> toolbarControls(BuildContext context, String id, FFI ffi) {
   final sessionId = ffi.sessionId;
 
   List<TTextMenu> v = [];
+  // Only `Refresh` is relevant in camera page.
+  if (ffi.connType == ConnType.viewCamera && pi.version.isNotEmpty) {
+    // refresh
+    v.add(TTextMenu(
+      child: Text(translate('Refresh')),
+      onPressed: () => sessionRefreshVideo(sessionId, pi),
+    ));
+    return v;
+  }
   // elevation
   if (perms['keyboard'] != false && ffi.elevationModel.showRequestMenu) {
     v.add(
@@ -149,10 +158,11 @@ List<TTextMenu> toolbarControls(BuildContext context, String id, FFI ffi) {
   }
 
   connectWithToken(
-      {required bool isFileTransfer, required bool isTcpTunneling}) {
+      {bool isFileTransfer = false, bool isViewCamera = false, bool isTcpTunneling = false}) {
     final connToken = bind.sessionGetConnToken(sessionId: ffi.sessionId);
     connect(context, id,
         isFileTransfer: isFileTransfer,
+        isViewCamera: isViewCamera,
         isTcpTunneling: isTcpTunneling,
         connToken: connToken);
   }
@@ -163,7 +173,16 @@ List<TTextMenu> toolbarControls(BuildContext context, String id, FFI ffi) {
       TTextMenu(
           child: Text(translate('Transfer file')),
           onPressed: () =>
-              connectWithToken(isFileTransfer: true, isTcpTunneling: false)),
+              connectWithToken(isFileTransfer: true)),
+    );
+  }
+  // viewCamera 
+  if (isDesktop) {
+    v.add(
+      TTextMenu(
+          child: Text(translate('View camera')),
+          onPressed: () =>
+              connectWithToken(isViewCamera: true)),
     );
   }
   // tcpTunneling
@@ -172,7 +191,7 @@ List<TTextMenu> toolbarControls(BuildContext context, String id, FFI ffi) {
       TTextMenu(
           child: Text(translate('TCP tunneling')),
           onPressed: () =>
-              connectWithToken(isFileTransfer: false, isTcpTunneling: true)),
+              connectWithToken(isTcpTunneling: true)),
     );
   }
   // note
@@ -523,6 +542,7 @@ Future<List<TToggleMenu>> toolbarDisplayToggle(
   final pi = ffiModel.pi;
   final perms = ffiModel.permissions;
   final sessionId = ffi.sessionId;
+  final isDefaultConn = ffi.connType == ConnType.defaultConn;
 
   // show quality monitor
   final option = 'show-quality-monitor';
@@ -556,7 +576,8 @@ Future<List<TToggleMenu>> toolbarDisplayToggle(
   final isSupportIfPeer_1_2_4 = versionCmp(pi.version, '1.2.4') >= 0 &&
       bind.mainHasFileClipboard() &&
       pi.platformAdditions.containsKey(kPlatformAdditionsHasFileClipboard);
-  if (ffiModel.keyboard &&
+  if (isDefaultConn &&
+      ffiModel.keyboard &&
       perms['file'] != false &&
       (isSupportIfPeer_1_2_3 || isSupportIfPeer_1_2_4)) {
     final enabled = !ffiModel.viewOnly;
@@ -574,7 +595,7 @@ Future<List<TToggleMenu>> toolbarDisplayToggle(
         child: Text(translate('Enable file copy and paste'))));
   }
   // disable clipboard
-  if (ffiModel.keyboard && perms['clipboard'] != false) {
+  if (isDefaultConn && ffiModel.keyboard && perms['clipboard'] != false) {
     final enabled = !ffiModel.viewOnly;
     final option = 'disable-clipboard';
     var value =
@@ -591,7 +612,7 @@ Future<List<TToggleMenu>> toolbarDisplayToggle(
         child: Text(translate('Disable clipboard'))));
   }
   // lock after session end
-  if (ffiModel.keyboard && !ffiModel.isPeerAndroid) {
+  if (isDefaultConn && ffiModel.keyboard && !ffiModel.isPeerAndroid) {
     final enabled = !ffiModel.viewOnly;
     final option = 'lock-after-session-end';
     final value =
@@ -656,12 +677,12 @@ Future<List<TToggleMenu>> toolbarDisplayToggle(
         child: Text(translate('True color (4:4:4)'))));
   }
 
-  if (isMobile) {
+  if (isDefaultConn && isMobile) {
     v.addAll(toolbarKeyboardToggles(ffi));
   }
 
   // view mode (mobile only, desktop is in keyboard menu)
-  if (isMobile && versionCmp(pi.version, '1.2.0') >= 0) {
+  if (isDefaultConn && isMobile && versionCmp(pi.version, '1.2.0') >= 0) {
     v.add(TToggleMenu(
         value: ffiModel.viewOnly,
         onChanged: (value) async {
