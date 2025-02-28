@@ -21,7 +21,7 @@ pub fn start_tray() {
             return;
         }
     }
-    allow_err!(make_tray());
+    allow_err!();
 }
 
 fn make_tray() -> hbb_common::ResultType<()> {
