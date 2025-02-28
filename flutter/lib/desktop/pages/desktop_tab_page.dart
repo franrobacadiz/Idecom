@@ -18,25 +18,74 @@ class DesktopTabPage extends StatefulWidget {
   @override
   State<DesktopTabPage> createState() => _DesktopTabPageState();
 
-  static void onAddSetting(
-      {SettingsTabKey initialPage = SettingsTabKey.general}) {
+  // Método estático que debe llamarse usando DesktopTabPage.onAddSetting()
+  static void onAddSetting({SettingsTabKey initialPage = SettingsTabKey.general}) {
     try {
       DesktopTabController tabController = Get.find<DesktopTabController>();
       tabController.add(TabInfo(
-          key: kTabLabelSettingPage,
-          label: kTabLabelSettingPage,
-          selectedIcon: Icons.build_sharp,
-          unselectedIcon: Icons.build_outlined,
-          page: DesktopSettingPage(
-            key: const ValueKey(kTabLabelSettingPage),
-            initialTabkey: initialPage,
-          )));
+        key: kTabLabelSettingPage,
+        label: kTabLabelSettingPage,
+        selectedIcon: Icons.build_sharp,
+        unselectedIcon: Icons.build_outlined,
+        page: DesktopSettingPage(
+          key: const ValueKey(kTabLabelSettingPage),
+          initialTabkey: initialPage,
+        ),
+      ));
     } catch (e) {
       debugPrintStack(label: '$e');
     }
   }
 }
 
+class _DesktopTabPageState extends State<DesktopTabPage> {
+  // Función para solicitar la contraseña antes de ejecutar onAddSetting
+  void promptForPassword({SettingsTabKey initialPage = SettingsTabKey.general}) {
+    TextEditingController passwordController = TextEditingController();
+
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Ingrese la contraseña'),
+        content: TextField(
+          controller: passwordController,
+          obscureText: true,
+          decoration: const InputDecoration(hintText: 'Contraseña'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(), // Cerrar el diálogo
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (passwordController.text == "tu_contraseña") { // Cambia esto por tu contraseña real
+                Get.back(); // Cierra el diálogo
+                DesktopTabPage.onAddSetting(initialPage: initialPage); // Llama a la función estática correctamente
+              } else {
+                Get.snackbar("Error", "Contraseña incorrecta",
+                    backgroundColor: Colors.red, colorText: Colors.white);
+              }
+            },
+            child: const Text('Aceptar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Configuración")),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () => promptForPassword(),
+          child: Text("Abrir configuración"),
+        ),
+      ),
+    );
+  }
+}
 class _DesktopTabPageState extends State<DesktopTabPage> {
   final tabController = DesktopTabController(tabType: DesktopTabType.main);
 
